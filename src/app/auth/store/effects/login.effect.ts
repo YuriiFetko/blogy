@@ -1,19 +1,19 @@
 import {Injectable} from '@angular/core'
 import {Actions, createEffect, ofType} from '@ngrx/effects'
-import {
-  registerAction,
-  registerFailureAction,
-  registerSuccesAction,
-} from '../actions/register.actions'
 import {AuthService} from '../../services/auth.service'
-import {catchError, map, of, switchMap, tap} from 'rxjs'
-import {CurrentUserInterface} from '../../../shared/types/currentUser.interface'
+import {
+  loginAction,
+  loginFailureAction,
+  loginSuccessAction,
+} from '../actions/login.actions'
+import {catchError, map, switchMap, of, tap} from 'rxjs'
 import {HttpErrorResponse} from '@angular/common/http'
-import {PersistenceService} from '../../../shared/services/persistence.service'
+import {CurrentUserInterface} from '../../../shared/types/currentUser.interface'
 import {Router} from '@angular/router'
+import {PersistenceService} from '../../../shared/services/persistence.service'
 
 @Injectable()
-export class RegisterEffect {
+export class LoginEffect {
   constructor(
     private actions$: Actions,
     private authService: AuthService,
@@ -21,30 +21,27 @@ export class RegisterEffect {
     private router: Router
   ) {}
 
-  register$ = createEffect(() =>
+  login$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(registerAction),
+      ofType(loginAction),
       switchMap(({request}) => {
-        return this.authService.register(request).pipe(
+        return this.authService.login(request).pipe(
           map((currentUser: CurrentUserInterface) => {
-            // window.localStorage.setItem('accessToken', currentUser.token)
             this.persistenceService.set('accessToken', currentUser.token)
-            return registerSuccesAction({currentUser})
+            return loginSuccessAction({currentUser})
           }),
           catchError((errorResponse: HttpErrorResponse) => {
-            return of(
-              registerFailureAction({errors: errorResponse.error.errors})
-            )
+            return of(loginFailureAction({errors: errorResponse.error.errors}))
           })
         )
       })
     )
   )
 
-  redirectAfterSubmit$ = createEffect(
+  redirectAfterLogin$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(registerSuccesAction),
+        ofType(loginSuccessAction),
         tap(() => {
           this.router.navigateByUrl('/')
         })

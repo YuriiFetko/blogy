@@ -1,10 +1,8 @@
 import {Injectable} from '@angular/core'
 
 @Injectable()
-export class PersistanceService {
-
-  constructor() {
-  }
+export class PersistenceService {
+  constructor() {}
 
   set(key: string, data: any) {
     try {
